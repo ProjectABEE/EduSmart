@@ -1,4 +1,5 @@
 import 'package:edusmart/view/homepage.dart';
+import 'package:edusmart/view/schedule.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
@@ -19,7 +20,7 @@ class _BottomNavigationEDUState extends State<BottomNavigationEDU> {
     widgetOptions = [
       HomePageEdu(name: widget.name),
       // Tambahkan halaman lain di sini
-      const Center(child: Text("Schedule")),
+      SchedulePage(),
       const Center(child: Text("Grades")),
       const Center(child: Text("Profile")),
     ];
