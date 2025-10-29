@@ -1,8 +1,7 @@
-import 'package:edusmart/bottomnav.dart';
 import 'package:edusmart/database/db_helper.dart';
 import 'package:edusmart/model/student_model.dart';
+import 'package:edusmart/view/loginedu.dart';
 import 'package:flutter/material.dart';
-
 
 class DaftarEdu extends StatefulWidget {
   const DaftarEdu({super.key});
@@ -236,13 +235,12 @@ class _DaftarEduState extends State<DaftarEdu> {
                                       Navigator.pushAndRemoveUntil(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              BottomNavigationEDU(
-                                                // email: emailcontroler.text,
-                                                // nama: namacontroler.text,
-                                                // kelas: kelascontroler.text,
-                                                // umur: umurcontroler.text,
-                                              ),
+                                          builder: (context) => LoginEdu(
+                                            // email: emailcontroler.text,
+                                            // nama: namacontroler.text,
+                                            // kelas: kelascontroler.text,
+                                            // umur: umurcontroler.text,
+                                          ),
                                           // settings: RouteSettings(
                                           //   arguments: {
                                           //     'nama': namacontroler.text,
@@ -307,7 +305,7 @@ class _DaftarEduState extends State<DaftarEdu> {
                                           age: int.parse(umurcontroler.text),
                                           password: passwordController.text,
                                         );
-                                    DbHelper  .registerUser(dataStudent);
+                                    DbHelper.registerUser(dataStudent);
                                   },
                                   child: Text(
                                     "Daftar",

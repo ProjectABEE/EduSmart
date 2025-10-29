@@ -1,18 +1,30 @@
-import 'package:edusmart/homepage.dart';
+import 'package:edusmart/view/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
-
 class BottomNavigationEDU extends StatefulWidget {
-  const BottomNavigationEDU({super.key});
-
+  const BottomNavigationEDU({super.key, required this.name});
+  final String name;
   @override
   State<BottomNavigationEDU> createState() => _BottomNavigationEDUState();
 }
 
 class _BottomNavigationEDUState extends State<BottomNavigationEDU> {
   int selectedindex = 0;
-  static const List<Widget> widgetOptions = [HomePageEdu()];
+  late List<Widget> widgetOptions; // tidak static, tidak const
+
+  @override
+  void initState() {
+    super.initState();
+    widgetOptions = [
+      HomePageEdu(name: widget.name),
+      // Tambahkan halaman lain di sini
+      const Center(child: Text("Schedule")),
+      const Center(child: Text("Grades")),
+      const Center(child: Text("Profile")),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,8 +47,8 @@ class _BottomNavigationEDUState extends State<BottomNavigationEDU> {
               gap: 8,
               activeColor: const Color.fromARGB(253, 4, 154, 241),
               iconSize: 24,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              duration: Duration(milliseconds: 400),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              duration: const Duration(milliseconds: 400),
               tabBackgroundColor: const Color.fromARGB(52, 4, 154, 241),
               color: const Color.fromARGB(255, 113, 113, 114),
               selectedIndex: selectedindex,
@@ -45,8 +57,7 @@ class _BottomNavigationEDUState extends State<BottomNavigationEDU> {
                   selectedindex = index;
                 });
               },
-
-              tabs: [
+              tabs: const [
                 GButton(icon: Icons.home, text: "Home"),
                 GButton(icon: Icons.calendar_month, text: "Schedule"),
                 GButton(icon: Icons.workspace_premium_outlined, text: "Grades"),
@@ -56,22 +67,6 @@ class _BottomNavigationEDUState extends State<BottomNavigationEDU> {
           ),
         ),
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   currentIndex: selectedindex,
-      //   onTap: (index) {
-      //     print(index);
-      //     setState(() {
-      //       selectedindex = index;
-      //     });
-      //   },
-      //   items: [
-      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.settings ),
-      //       label: "Tentang Aplikasi",
-      //     ),
-      //   ],
-      // ),
       body: widgetOptions[selectedindex],
     );
   }

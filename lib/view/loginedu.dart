@@ -1,7 +1,7 @@
-import 'package:edusmart/bottomnav.dart';
-import 'package:edusmart/daftaredu_dart';
 import 'package:edusmart/database/db_helper.dart';
 import 'package:edusmart/preferences/preferences_handler.dart';
+import 'package:edusmart/view/bottomnav.dart';
+import 'package:edusmart/view/daftaredu.dart';
 import 'package:edusmart/widget/buttonwidget.dart';
 import 'package:edusmart/widget/buttonwidget2.dart';
 import 'package:flutter/material.dart';
@@ -88,13 +88,7 @@ class _LoginEduState extends State<LoginEdu> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          "Don't have an account?",
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w100,
-                          ),
-                        ),
+                        Text("Don't have an account?"),
                         const SizedBox(width: 1),
                         TextButton(
                           onPressed: () {
@@ -233,11 +227,13 @@ class _LoginEduState extends State<LoginEdu> {
                           );
                           if (user != null) {
                             PreferenceHandler.saveLogin(true);
+                            await PreferenceHandler.setName(user.name);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 // Untuk memindahkan ke halaman tertuju
                                 builder: (context) => BottomNavigationEDU(
+                                  name: user.name,
                                   // email: emailController.text,
                                   // nama: 'User',
                                   // kelas: '-',

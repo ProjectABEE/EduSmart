@@ -74,4 +74,19 @@ class DbHelper {
     //Insert adalah fungsi untuk menambahkan data (CREATE)
     await dbs.delete(tableStudent, where: "id = ?", whereArgs: [id]);
   }
+
+  //Ambil Nama siswa
+  static Future<StudentModel?> getStudentByName(String name) async {
+    final dbs = await db();
+    final List<Map<String, dynamic>> results = await dbs.query(
+      tableStudent,
+      where: 'name = ?',
+      whereArgs: [name],
+    );
+
+    if (results.isNotEmpty) {
+      return StudentModel.fromMap(results.first);
+    }
+    return null;
+  }
 }

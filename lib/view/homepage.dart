@@ -1,13 +1,13 @@
-import 'package:edusmart/loginedu.dart';
 import 'package:edusmart/preferences/preferences_handler.dart';
+import 'package:edusmart/view/loginedu.dart';
 import 'package:edusmart/widget/announcementsW.dart';
 import 'package:edusmart/widget/daybox.dart';
+import 'package:edusmart/widget/nilai.dart';
 import 'package:flutter/material.dart';
 
-
 class HomePageEdu extends StatefulWidget {
-  const HomePageEdu({super.key});
-
+  const HomePageEdu({super.key, required this.name});
+  final String name;
   @override
   State<HomePageEdu> createState() => _HomePageEduState();
 }
@@ -21,6 +21,7 @@ class _HomePageEduState extends State<HomePageEdu> {
           decoration: BoxDecoration(color: Colors.white),
           child: Column(
             children: [
+              // Profil Atas Biru
               Container(
                 height: 200,
                 width: double.infinity,
@@ -62,7 +63,7 @@ class _HomePageEduState extends State<HomePageEdu> {
                               ),
                             ),
                             Text(
-                              "Abraham Adnan Kahar",
+                              widget.name,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
@@ -132,6 +133,7 @@ class _HomePageEduState extends State<HomePageEdu> {
                 ),
               ),
               SizedBox(height: 16),
+              // Container Attendance
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 15),
                 height: 325,
@@ -170,7 +172,7 @@ class _HomePageEduState extends State<HomePageEdu> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 16),
+                    SizedBox(height: 4),
                     Container(
                       width: 320,
                       padding: EdgeInsets.symmetric(
@@ -302,6 +304,7 @@ class _HomePageEduState extends State<HomePageEdu> {
                 ),
               ),
               SizedBox(height: 30),
+              // Container Annoucements
               Container(
                 padding: EdgeInsets.only(left: 20),
                 margin: EdgeInsets.symmetric(horizontal: 15),
@@ -405,6 +408,64 @@ class _HomePageEduState extends State<HomePageEdu> {
                 ),
               ),
               SizedBox(height: 30),
+              // Container Today Schedule
+              Container(
+                padding: EdgeInsets.only(left: 20, top: 16),
+                margin: EdgeInsets.symmetric(horizontal: 15),
+                height: 474,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 1,
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 2, right: 20),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0x103b82f6),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.access_time,
+                              color: Color(0xff3b82f6),
+                              size: 20,
+                            ),
+                          ),
+                          // Icon(
+                          //   Icons.notifications_none_outlined,
+                          //   color: Color(0xffFF6900),
+                          //   size: 26,
+                          // ),
+                          SizedBox(width: 8),
+                          Text(
+                            "Today's Schadule",
+                            style: TextStyle(fontSize: 16.9),
+                          ),
+                          Spacer(),
+                          Text(
+                            "Monday",
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 30),
+              // Container Recent Grades
               Container(
                 padding: EdgeInsets.only(left: 20, top: 16),
                 margin: EdgeInsets.symmetric(horizontal: 15),
@@ -470,6 +531,37 @@ class _HomePageEduState extends State<HomePageEdu> {
                           ),
                         ],
                       ),
+                    ),
+                    SizedBox(height: 20),
+                    GradeTile(
+                      subject: "Mathematics",
+                      score: 95,
+                      color: Colors.purple,
+                      change: 5,
+                    ),
+                    GradeTile(
+                      subject: "Physics",
+                      score: 88,
+                      color: Colors.blue,
+                      change: 3,
+                    ),
+                    GradeTile(
+                      subject: "English",
+                      score: 92,
+                      color: Colors.green,
+                      change: -2,
+                    ),
+                    GradeTile(
+                      subject: "Chemistry",
+                      score: 85,
+                      color: Colors.orange,
+                      change: 8,
+                    ),
+                    GradeTile(
+                      subject: "Ngoding",
+                      score: 20,
+                      color: Colors.red,
+                      change: -40,
                     ),
                   ],
                 ),

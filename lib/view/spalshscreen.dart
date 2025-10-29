@@ -1,17 +1,17 @@
-import 'package:edusmart/bottomnav.dart';
 import 'package:edusmart/constant/appimage.dart';
-import 'package:edusmart/loginedu.dart';
 import 'package:edusmart/preferences/preferences_handler.dart';
+import 'package:edusmart/view/bottomnav.dart';
+import 'package:edusmart/view/loginedu.dart';
 import 'package:flutter/material.dart';
 
-class SplashScreenDay18 extends StatefulWidget {
-  const SplashScreenDay18({super.key});
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
 
   @override
-  State<SplashScreenDay18> createState() => _SplashScreenDay18State();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenDay18State extends State<SplashScreenDay18> {
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -21,11 +21,14 @@ class _SplashScreenDay18State extends State<SplashScreenDay18> {
   isLoginFunction() async {
     Future.delayed(Duration(seconds: 1)).then((value) async {
       var isLogin = await PreferenceHandler.getLogin();
+      var name = await PreferenceHandler.getName();
       print(isLogin);
       if (isLogin != null && isLogin == true) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => BottomNavigationEDU()),
+          MaterialPageRoute(
+            builder: (context) => BottomNavigationEDU(name: '$name'),
+          ),
           (route) => false,
         );
       } else {
