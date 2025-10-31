@@ -1,8 +1,15 @@
+import 'package:edusmart/database/db_helper.dart';
+import 'package:edusmart/model/student_model.dart';
+import 'package:edusmart/preferences/preferences_handler.dart';
+import 'package:edusmart/view/EditProfile.dart';
+import 'package:edusmart/view/loginedu.dart';
 import 'package:edusmart/widget/WidgetStatistic.dart';
 import 'package:edusmart/widget/infotile.dart';
 import 'package:edusmart/widget/judulW.dart';
 import 'package:edusmart/widget/menu.dart';
+import 'package:edusmart/widget/textfieldwidget.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,12 +19,136 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  StudentModel? student;
+
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  Future<void> getData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email'); // ambil email user login
+
+    if (email != null) {
+      final db = await DbHelper.db();
+      final result = await db.query(
+        DbHelper.tableStudent,
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+
+      if (result.isNotEmpty) {
+        setState(() {
+          student = StudentModel.fromMap(result.first);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Future<void> onEdit(StudentModel student) async {
+      final editNameC = TextEditingController(text: student.name);
+      final editAgeC = TextEditingController(text: student.age.toString());
+      final editClasssC = TextEditingController(text: student.classs);
+      final editEmailC = TextEditingController(text: student.email);
+      final editPassC = TextEditingController(text: student.password);
+      final res = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Edit Data"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 12,
+              children: [
+                Textfield(nama: "Name", controler: editNameC),
+                Textfield(nama: "Email", controler: editEmailC),
+                Textfield(nama: "Age", controler: editAgeC),
+                Textfield(nama: "Classs", controler: editClasssC),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("Batal"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: Text("Simpan"),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (res == true) {
+        final updated = StudentModel(
+          id: student.id,
+          name: editNameC.text,
+          email: editEmailC.text,
+          classs: editClasssC.text,
+          age: int.parse(editAgeC.text),
+          password: editPassC.text,
+        );
+        DbHelper.updateStudent(updated);
+        getData();
+        ScaffoldMessenger(child: Text("data berhasil di perbarui"));
+      }
+    }
+
+    Future<void> onDelete(StudentModel student) async {
+      final res = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Hapus Data"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 12,
+              children: [
+                Text(
+                  "Apakah anda yakin ingin menghapus data ${student.name}?",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("Jangan"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: Text("Ya, hapus aja"),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (res == true) {
+        DbHelper.deleteStudent(student.id!);
+        getData();
+        ScaffoldMessenger(child: Text("data berhasil di hapus"));
+      }
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xfff7f9fc),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 🔹 Header
             Container(
@@ -41,8 +172,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     backgroundColor: Colors.white,
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    "Ahmad Syahputra",
+                  Text(
+                    student?.name ?? '-',
                     style: TextStyle(
                       fontSize: 22,
                       color: Colors.white,
@@ -50,13 +181,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    "Class 10 • IPA 2",
+                  Text(
+                    "Class ${student?.classs ?? '-'}",
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: student == null ? null : () => onEdit(student!),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: const Color(0xFF2567E8),
@@ -99,30 +230,54 @@ class _ProfilePageState extends State<ProfilePage> {
 
             // 🔹 Personal Information
             sectionTitle("Personal Information"),
-            infoTile(Icons.email, "ahmad.syahputra@school.edu", "Email"),
-            infoTile(Icons.phone, "+62 812-3456-7890", "Phone"),
-            infoTile(
-              Icons.location_on,
-              "Jl. Pendidikan No. 123, Jakarta",
-              "Address",
-            ),
-            infoTile(Icons.cake, "May 15, 2008", "Birth Date"),
+            infoTile(Icons.email, student?.email ?? '-', "Email"),
+            infoTile(Icons.phone, student?.noTelp ?? '-', "Phone"),
+            infoTile(Icons.location_on, student?.alamat ?? '-', "Address"),
+            infoTile(Icons.cake, student?.tanggalLahir ?? '-', "Birth Date"),
 
             const SizedBox(height: 24),
 
             // 🔹 Parent/Guardian
             sectionTitle("Parent/Guardian"),
-            infoTile(Icons.person, "Mr. Budi Syahputra", "Name"),
-            infoTile(Icons.phone_android, "+62 813-2345-6789", "Contact"),
+            infoTile(Icons.person, student?.namaOrtu ?? '-', "Name"),
+            infoTile(
+              Icons.phone_android,
+              student?.kontakOrtu ?? '-',
+              "Contact",
+            ),
 
             const SizedBox(height: 24),
 
             // 🔹 Settings / Logout
-            menuItem(Icons.edit, "Edit Profile"),
-            menuItem(Icons.settings, "Settings"),
-            menuItem(Icons.help_outline, "Help & Support"),
-            menuItem(Icons.logout, "Logout", isLogout: true),
+            MenuItemWidget(
+              icon: Icons.edit,
+              title: "Edit Profile",
+              route: student == null
+                  ? null
+                  : EditProfilePage(student: student!),
+              onReturn: () => getData(),
+            ),
 
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: TextButton(
+                onPressed: () {
+                  PreferenceHandler.removeLogin();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginEdu()),
+                    (route) => false,
+                  );
+                },
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.red),
+                    SizedBox(width: 14),
+                    Text("Logout", style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 30),
           ],
         ),

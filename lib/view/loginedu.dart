@@ -5,6 +5,7 @@ import 'package:edusmart/view/daftaredu.dart';
 import 'package:edusmart/widget/buttonwidget.dart';
 import 'package:edusmart/widget/buttonwidget2.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginEdu extends StatefulWidget {
   const LoginEdu({super.key});
@@ -33,6 +34,11 @@ class _LoginEduState extends State<LoginEdu> {
       isbuttonenable =
           emailController.text.isNotEmpty && passwordController.text.isNotEmpty;
     });
+  }
+
+  Future<void> saveUserSession(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('email', email);
   }
 
   @override
@@ -228,6 +234,7 @@ class _LoginEduState extends State<LoginEdu> {
                           if (user != null) {
                             PreferenceHandler.saveLogin(true);
                             await PreferenceHandler.setName(user.name);
+                            await saveUserSession(emailController.text);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 class StudentModel {
   int? id;
   String name;
@@ -8,6 +7,14 @@ class StudentModel {
   String classs;
   int age;
   dynamic password;
+
+  // 🔹 Kolom baru
+  String? noTelp;
+  String? alamat;
+  String? tanggalLahir;
+  String? namaOrtu;
+  String? kontakOrtu;
+
   StudentModel({
     this.id,
     required this.name,
@@ -15,27 +22,42 @@ class StudentModel {
     required this.classs,
     required this.age,
     required this.password,
+    this.noTelp,
+    this.alamat,
+    this.tanggalLahir,
+    this.namaOrtu,
+    this.kontakOrtu,
   });
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'id': id,
       'name': name,
       'email': email,
       'class': classs,
       'age': age,
       'password': password,
+      'no_telp': noTelp,
+      'alamat': alamat,
+      'tanggal_lahir': tanggalLahir,
+      'nama_ortu': namaOrtu,
+      'kontak_ortu': kontakOrtu,
     };
   }
 
   factory StudentModel.fromMap(Map<String, dynamic> map) {
     return StudentModel(
-      id: map['id'] as int,
-      name: map['name'] as String,
-      email: map['email'] as String,
-      classs: map['class'] as String,
-      age: map['age'] as int,
-      password: map['password'] as String,
+      id: map['id'] as int?,
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      classs: map['class'] ?? '',
+      age: map['age'] ?? 0,
+      password: map['password'],
+      noTelp: map['no_telp'],
+      alamat: map['alamat'],
+      tanggalLahir: map['tanggal_lahir'],
+      namaOrtu: map['nama_ortu'],
+      kontakOrtu: map['kontak_ortu'],
     );
   }
 

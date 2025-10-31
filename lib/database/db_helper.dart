@@ -4,16 +4,35 @@ import 'package:sqflite/sqflite.dart';
 
 class DbHelper {
   static const tableStudent = 'students';
+  static const tableSubjects = 'subjects';
+  static const tableGrades = 'grades';
   static Future<Database> db() async {
     final dbPath = await getDatabasesPath();
     return openDatabase(
       join(dbPath, 'ppkd.db'),
       onCreate: (db, version) async {
         await db.execute(
-          "CREATE TABLE $tableStudent(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, class TEXT, age int, password TEXT )",
+          "CREATE TABLE $tableStudent(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, class TEXT, age int, password TEXT, no_telp TEXT, alamat TEXT, tanggal_lahir TEXT, nama_ortu TEXT, kontak_ortu TEXT )",
         );
-      },
+        await db.execute('''
+          CREATE TABLE $tableSubjects(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL
+          )
+        ''');
 
+        await db.execute('''
+          CREATE TABLE $tableGrades(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            subject_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            score REAL NOT NULL,
+            FOREIGN KEY(student_id) REFERENCES $tableStudent(id) ON DELETE CASCADE,
+            FOREIGN KEY(subject_id) REFERENCES $tableSubjects(id) ON DELETE CASCADE
+          )
+        ''');
+      },
       version: 1,
     );
   }
@@ -88,5 +107,74 @@ class DbHelper {
       return StudentModel.fromMap(results.first);
     }
     return null;
+  }
+
+  // CRUD SUBJECTS
+  static Future<void> insertSubject(Map<String, dynamic> subject) async {
+    final dbs = await db();
+    await dbs.insert(
+      tableSubjects,
+      subject,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllSubjects() async {
+    final dbs = await db();
+    return await dbs.query(tableSubjects);
+  }
+
+  static Future<void> updateSubject(
+    int id,
+    Map<String, dynamic> subject,
+  ) async {
+    final dbs = await db();
+    await dbs.update(tableSubjects, subject, where: "id = ?", whereArgs: [id]);
+  }
+
+  static Future<void> deleteSubject(int id) async {
+    final dbs = await db();
+    await dbs.delete(tableSubjects, where: "id = ?", whereArgs: [id]);
+  }
+
+  // CRUD GRADES
+
+  static Future<List<Map<String, dynamic>>> getAllGrades() async {
+    final dbs = await db();
+    return await dbs.rawQuery('''
+    SELECT g.id, g.type, g.score, s.name AS subject_name
+    FROM $tableGrades g
+    JOIN $tableSubjects s ON g.subject_id = s.id
+  ''');
+  }
+
+  static Future<void> insertGrade(Map<String, dynamic> grade) async {
+    final dbs = await db();
+    await dbs.insert(
+      tableGrades,
+      grade,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<List<Map<String, dynamic>>> getGradesByStudent(
+    int studentId,
+  ) async {
+    final dbs = await db();
+    return await dbs.query(
+      tableGrades,
+      where: "student_id = ?",
+      whereArgs: [studentId],
+    );
+  }
+
+  static Future<void> updateGrade(int id, Map<String, dynamic> grade) async {
+    final dbs = await db();
+    await dbs.update(tableGrades, grade, where: "id = ?", whereArgs: [id]);
+  }
+
+  static Future<void> deleteGrade(int id) async {
+    final dbs = await db();
+    await dbs.delete(tableGrades, where: "id = ?", whereArgs: [id]);
   }
 }

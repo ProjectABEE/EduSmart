@@ -1,3 +1,4 @@
+import 'package:edusmart/view/add_grade_page.dart';
 import 'package:edusmart/widget/taksitem.dart';
 import 'package:flutter/material.dart';
 
@@ -12,6 +13,17 @@ class _GradesPageState extends State<GradesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddGradePage()),
+          );
+          setState(() {}); // refresh setelah balik
+        },
+        backgroundColor: const Color(0xFF2567E8),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: SingleChildScrollView(
         child: Container(
           decoration: BoxDecoration(color: Colors.white),
