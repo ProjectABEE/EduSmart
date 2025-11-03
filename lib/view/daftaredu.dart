@@ -63,7 +63,7 @@ class _DaftarEduState extends State<DaftarEdu> {
               Image.asset('assets/images/EduSmart.png', scale: 14),
               Container(
                 width: 343,
-                height: 680,
+                height: 700,
                 margin: EdgeInsets.only(bottom: 40),
                 padding: EdgeInsets.symmetric(vertical: 20),
                 decoration: BoxDecoration(
@@ -219,22 +219,22 @@ class _DaftarEduState extends State<DaftarEdu> {
                                 return null;
                               },
                             ),
-                            DropdownButton<String>(
-                              value: selectedRole,
-                              items: ['siswa', 'guru']
-                                  .map(
-                                    (role) => DropdownMenuItem(
-                                      value: role,
-                                      child: Text(role.toUpperCase()),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedRole = value!;
-                                });
-                              },
-                            ),
+                            // DropdownButton<String>(
+                            //   value: selectedRole,
+                            //   items: ['siswa', 'guru']
+                            //       .map(
+                            //         (role) => DropdownMenuItem(
+                            //           value: role,
+                            //           child: Text(role.toUpperCase()),
+                            //         ),
+                            //       )
+                            //       .toList(),
+                            //   onChanged: (value) {
+                            //     setState(() {
+                            //       selectedRole = value!;
+                            //     });
+                            //   },
+                            // ),
                             SizedBox(height: 20),
                             Center(
                               child: SizedBox(

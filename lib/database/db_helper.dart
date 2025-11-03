@@ -32,6 +32,18 @@ class DbHelper {
             FOREIGN KEY(subject_id) REFERENCES $tableSubjects(id) ON DELETE CASCADE
           )
         ''');
+
+        await db.execute('''
+  CREATE TABLE attendance (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    check_in TEXT,
+    check_out TEXT,
+    status TEXT,
+    FOREIGN KEY(student_id) REFERENCES $tableStudent(id) ON DELETE CASCADE
+  )
+''');
       },
       version: 1,
     );
@@ -176,5 +188,49 @@ class DbHelper {
   static Future<void> deleteGrade(int id) async {
     final dbs = await db();
     await dbs.delete(tableGrades, where: "id = ?", whereArgs: [id]);
+  }
+
+  // ====== CRUD ABSENSI ======
+  static Future<int> insertAttendance(Map<String, dynamic> attendance) async {
+    final dbs = await db();
+    return await dbs.insert('attendance', attendance);
+  }
+
+  static Future<void> updateCheckOut(int id, String checkOut) async {
+    final dbs = await db();
+    await dbs.update(
+      'attendance',
+      {'check_out': checkOut},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  static Future<List<Map<String, dynamic>>> getAttendanceByStudent(
+    int studentId,
+  ) async {
+    final dbs = await db();
+    return await dbs.query(
+      'attendance',
+      where: 'student_id = ?',
+      whereArgs: [studentId],
+      orderBy: 'date DESC',
+    );
+  }
+
+  // Hapus satu riwayat absensi berdasarkan ID
+  static Future<int> deleteAttendance(int id) async {
+    final db = await DbHelper.db();
+    return await db.delete('attendance', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // (Opsional) Hapus semua riwayat absensi siswa
+  static Future<int> deleteAllAttendanceByStudent(int studentId) async {
+    final db = await DbHelper.db();
+    return await db.delete(
+      'attendance',
+      where: 'student_id = ?',
+      whereArgs: [studentId],
+    );
   }
 }

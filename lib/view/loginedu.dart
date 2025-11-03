@@ -2,7 +2,7 @@ import 'package:edusmart/database/db_helper.dart';
 import 'package:edusmart/preferences/preferences_handler.dart';
 import 'package:edusmart/view/bottomnav.dart';
 import 'package:edusmart/view/daftaredu.dart';
-import 'package:edusmart/view/homepage%20copy.dart';
+import 'package:edusmart/view/homepage2.dart';
 import 'package:edusmart/widget/buttonwidget.dart';
 import 'package:edusmart/widget/buttonwidget2.dart';
 import 'package:flutter/material.dart';

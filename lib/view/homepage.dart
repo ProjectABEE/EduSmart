@@ -1,10 +1,14 @@
+import 'package:edusmart/database/db_helper.dart';
+import 'package:edusmart/model/student_model.dart';
 import 'package:edusmart/preferences/preferences_handler.dart';
+import 'package:edusmart/view/AttendanceSection.dart';
 import 'package:edusmart/view/loginedu.dart';
 import 'package:edusmart/widget/announcementsW.dart';
-import 'package:edusmart/widget/daybox.dart';
 import 'package:edusmart/widget/nilai.dart';
 import 'package:edusmart/widget/schedule.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePageEdu extends StatefulWidget {
   const HomePageEdu({super.key, required this.name});
@@ -14,6 +18,147 @@ class HomePageEdu extends StatefulWidget {
 }
 
 class _HomePageEduState extends State<HomePageEdu> {
+  StudentModel? student;
+  bool isCheckedIn = false;
+  bool isCheckedOut = false;
+  int? todayAttendanceId;
+  Map<String, dynamic>? todayAttendance;
+
+  Future<void> _refreshAttendance() async {
+    final results = await DbHelper.getAttendanceByStudent(student!.id!);
+    final today = DateTime.now().toIso8601String().split('T').first;
+
+    final todayRecord = results.firstWhere(
+      (item) => item['date'] == today,
+      orElse: () => {},
+    );
+
+    setState(() {
+      isCheckedIn = todayRecord.isNotEmpty;
+      isCheckedOut = todayRecord['check_out'] != null;
+      todayAttendanceId = todayRecord['id'];
+    });
+  }
+
+  void checkIn() async {
+    if (student == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Data siswa belum siap')));
+      return;
+    }
+
+    final now = DateTime.now();
+    final formattedDate = DateFormat('yyyy-MM-dd').format(now);
+    final formattedTime = DateFormat('HH:mm').format(now);
+
+    final attendance = {
+      'student_id': student!.id,
+      'date': formattedDate,
+      'check_in': formattedTime,
+      'check_out': null,
+      'status': 'Hadir',
+    };
+
+    final insertedId = await DbHelper.insertAttendance(attendance);
+
+    setState(() {
+      isCheckedIn = true;
+      todayAttendanceId = insertedId;
+    });
+
+    // 🔥 ini yang bikin realtime refresh
+    await _loadTodayAttendance();
+
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Check In berhasil!')));
+    }
+  }
+
+  void checkOut() async {
+    if (todayAttendanceId == null) return;
+
+    final now = DateTime.now();
+    final formattedTime = DateFormat('HH:mm').format(now);
+
+    await DbHelper.updateCheckOut(todayAttendanceId!, formattedTime);
+
+    setState(() {
+      isCheckedOut = true;
+    });
+
+    // 🔥 Refresh data agar tampil Check Out langsung
+    await _loadTodayAttendance();
+
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Check Out berhasil!')));
+    }
+  }
+
+  Future<void> _loadTodayAttendance() async {
+    if (student == null) return;
+
+    final db = await DbHelper.db();
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    final results = await db.query(
+      'attendance',
+      where: 'student_id = ? AND date = ?',
+      whereArgs: [student!.id, today],
+    );
+
+    if (results.isNotEmpty) {
+      setState(() {
+        todayAttendance = results.first;
+        isCheckedIn = results.first['check_in'] != null;
+        isCheckedOut = results.first['check_out'] != null;
+        todayAttendanceId = results.first['id'] as int?;
+      });
+    } else {
+      setState(() {
+        todayAttendance = null;
+        isCheckedIn = false;
+        isCheckedOut = false;
+        todayAttendanceId = null;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await getData();
+    await _loadTodayAttendance(); // baru load absensi setelah student ke-load
+  }
+
+  Future<void> getData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+
+    if (email != null) {
+      final db = await DbHelper.db();
+      final result = await db.query(
+        DbHelper.tableStudent,
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+
+      if (result.isNotEmpty) {
+        setState(() {
+          student = StudentModel.fromMap(result.first);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,7 +282,6 @@ class _HomePageEduState extends State<HomePageEdu> {
               // Container Attendance
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 15),
-                height: 325,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
                   color: Colors.white,
@@ -150,160 +294,320 @@ class _HomePageEduState extends State<HomePageEdu> {
                     ),
                   ],
                 ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xffeaf0ff),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.calendar_today,
-                              color: Color(0xff3b82f6),
-                              size: 20,
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Text("Attendance", style: TextStyle(fontSize: 18)),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Container(
-                      width: 320,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Color(0xfff8fbff),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "This Week",
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Spacer(),
-                              Text(
-                                "92%",
-                                style: TextStyle(
-                                  color: Color(0xff3b82f6),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Stack(
-                            children: [
-                              Container(
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade300,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              FractionallySizedBox(
-                                widthFactor: 0.92, // 92%
-                                child: Container(
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black87,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              DayBox(day: "Mon", checked: true),
-                              DayBox(day: "Tue", checked: true),
-                              DayBox(day: "Wed", checked: true),
-                              DayBox(day: "Thu", checked: false),
-                              DayBox(day: "Fri", checked: true),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xff3b82f6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                              ),
-                              icon: const Icon(
-                                Icons.access_time,
-                                color: Colors.white,
-                              ),
-                              label: const Text(
-                                "Check In",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {},
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: Color(0xff3b82f6),
-                                  width: 2,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                              ),
-                              child: const Text(
-                                "Check Out",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xff3b82f6),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                child: AttendanceSection(student: student),
               ),
+
+              // Container(
+              //   margin: EdgeInsets.symmetric(horizontal: 15),
+              //   height: 500,
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(30),
+              //     color: Colors.white,
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: Colors.grey.withOpacity(0.5),
+              //         spreadRadius: 1,
+              //         blurRadius: 20,
+              //         offset: const Offset(0, 8),
+              //       ),
+              //     ],
+              //   ),
+              //   child: Column(
+              //     children: [
+              //       Padding(
+              //         padding: const EdgeInsets.all(20.0),
+              //         child: Row(
+              //           children: [
+              //             Container(
+              //               padding: const EdgeInsets.all(8),
+              //               decoration: BoxDecoration(
+              //                 color: const Color(0xffeaf0ff),
+              //                 borderRadius: BorderRadius.circular(12),
+              //               ),
+              //               child: const Icon(
+              //                 Icons.calendar_today,
+              //                 color: Color(0xff3b82f6),
+              //                 size: 20,
+              //               ),
+              //             ),
+              //             SizedBox(width: 10),
+              //             Text("Attendance", style: TextStyle(fontSize: 18)),
+              //             Spacer(),
+              //             InkWell(
+              //               onTap: () {
+              //                 Navigator.push(
+              //                   context,
+              //                   MaterialPageRoute(
+              //                     builder: (context) =>
+              //                         HomePageGuruEdu(name: 'name'),
+              //                   ),
+              //                 );
+              //               },
+              //               child: Row(
+              //                 children: [
+              //                   Icon(Icons.access_time),
+              //                   SizedBox(width: 4),
+              //                   Text("History"),
+              //                 ],
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+
+              //       SizedBox(height: 4),
+              //       Container(
+              //         width: 320,
+              //         padding: EdgeInsets.symmetric(
+              //           horizontal: 16,
+              //           vertical: 14,
+              //         ),
+              //         decoration: BoxDecoration(
+              //           color: Color(0xfff8fbff),
+              //           borderRadius: BorderRadius.circular(16),
+              //         ),
+              //         child: isCheckedIn
+              //             ? Column(
+              //                 crossAxisAlignment: CrossAxisAlignment.start,
+              //                 children: [
+              //                   Column(
+              //                     crossAxisAlignment: CrossAxisAlignment.start,
+              //                     children: [
+              //                       const Text(
+              //                         "Status Absensi Hari Ini",
+              //                         style: TextStyle(
+              //                           fontWeight: FontWeight.bold,
+              //                           fontSize: 16,
+              //                         ),
+              //                       ),
+              //                       const SizedBox(height: 6),
+              //                       Text(
+              //                         "Check In: ${todayAttendance?['check_in'] ?? '-'}",
+              //                       ),
+              //                       Text(
+              //                         "Check Out: ${todayAttendance?['check_out'] ?? '-'}",
+              //                       ),
+              //                       // Text(
+              //                       //   "This Week",
+              //                       //   style: TextStyle(
+              //                       //     color: Colors.black87,
+              //                       //     fontWeight: FontWeight.w500,
+              //                       //   ),
+              //                       // ),
+              //                       // Spacer(),
+              //                       // Text(
+              //                       //   "92%",
+              //                       //   style: TextStyle(
+              //                       //     color: Color(0xff3b82f6),
+              //                       //     fontWeight: FontWeight.w600,
+              //                       //   ),
+              //                       // ),
+              //                     ],
+              //                   ),
+              //                   const SizedBox(height: 10),
+              //                   Stack(
+              //                     children: [
+              //                       Container(
+              //                         height: 8,
+              //                         decoration: BoxDecoration(
+              //                           color: Colors.grey.shade300,
+              //                           borderRadius: BorderRadius.circular(8),
+              //                         ),
+              //                       ),
+              //                       FractionallySizedBox(
+              //                         widthFactor: 0.92, // 92%
+              //                         child: Container(
+              //                           height: 8,
+              //                           decoration: BoxDecoration(
+              //                             color: Colors.black87,
+              //                             borderRadius: BorderRadius.circular(
+              //                               8,
+              //                             ),
+              //                           ),
+              //                         ),
+              //                       ),
+              //                     ],
+              //                   ),
+              //                   const SizedBox(height: 16),
+              //                   Row(
+              //                     mainAxisAlignment:
+              //                         MainAxisAlignment.spaceBetween,
+              //                     children: const [
+              //                       DayBox(day: "Mon", checked: true),
+              //                       DayBox(day: "Tue", checked: true),
+              //                       DayBox(day: "Wed", checked: true),
+              //                       DayBox(day: "Thu", checked: false),
+              //                       DayBox(day: "Fri", checked: true),
+              //                     ],
+              //                   ),
+              //                 ],
+              //               )
+              //             : const Text("Belum Check In"),
+              //       ),
+              //       const SizedBox(height: 20),
+              //       Padding(
+              //         padding: const EdgeInsets.symmetric(horizontal: 24),
+              //         child: Row(
+              //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //           children: [
+              //             Expanded(
+              //               child: ElevatedButton.icon(
+              //                 onPressed: isCheckedIn
+              //                     ? null
+              //                     : () async {
+              //                         final now = DateTime.now()
+              //                             .toIso8601String()
+              //                             .substring(11, 16);
+              //                         final today = DateTime.now()
+              //                             .toIso8601String()
+              //                             .split('T')
+              //                             .first;
+
+              //                         final id =
+              //                             await DbHelper.insertAttendance({
+              //                               'student_id': student?.id,
+              //                               'date': today,
+              //                               'check_in': now,
+              //                               'check_out': null,
+              //                             });
+
+              //                         setState(() {
+              //                           isCheckedIn = true;
+              //                           todayAttendanceId = id;
+              //                         });
+
+              //                         await _refreshAttendance();
+              //                       },
+
+              //                 style: ElevatedButton.styleFrom(
+              //                   backgroundColor: const Color(0xff3b82f6),
+              //                   shape: RoundedRectangleBorder(
+              //                     borderRadius: BorderRadius.circular(12),
+              //                   ),
+              //                   padding: const EdgeInsets.symmetric(
+              //                     vertical: 14,
+              //                   ),
+              //                 ),
+              //                 icon: const Icon(
+              //                   Icons.access_time,
+              //                   color: Colors.white,
+              //                 ),
+              //                 label: Text(
+              //                   isCheckedIn ? "Sudah Check In" : "Check In",
+              //                   style: const TextStyle(
+              //                     fontWeight: FontWeight.w600,
+              //                     color: Colors.white,
+              //                   ),
+              //                 ),
+              //               ),
+              //             ),
+              //             const SizedBox(width: 12),
+              //             Expanded(
+              //               child: OutlinedButton(
+              //                 onPressed: isCheckedIn && !isCheckedOut
+              //                     ? () async {
+              //                         final now = DateTime.now()
+              //                             .toIso8601String()
+              //                             .substring(11, 16);
+              //                         await DbHelper.updateCheckOut(
+              //                           todayAttendanceId!,
+              //                           now,
+              //                         );
+
+              //                         setState(() {
+              //                           isCheckedOut = true;
+              //                         });
+
+              //                         await _refreshAttendance();
+              //                       }
+              //                     : null,
+
+              //                 style: OutlinedButton.styleFrom(
+              //                   side: const BorderSide(
+              //                     color: Color(0xff3b82f6),
+              //                     width: 2,
+              //                   ),
+              //                   shape: RoundedRectangleBorder(
+              //                     borderRadius: BorderRadius.circular(12),
+              //                   ),
+              //                   padding: const EdgeInsets.symmetric(
+              //                     vertical: 14,
+              //                   ),
+              //                 ),
+              //                 child: Text(
+              //                   isCheckedOut ? "Sudah Check Out" : "Check Out",
+              //                   style: const TextStyle(
+              //                     fontWeight: FontWeight.w600,
+              //                     color: Color(0xff3b82f6),
+              //                   ),
+              //                 ),
+              //               ),
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+
+              //       // Padding(
+              //       //   padding: const EdgeInsets.symmetric(horizontal: 24),
+              //       //   child: Row(
+              //       //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //       //     children: [
+              //       //       Expanded(
+              //       //         child: ElevatedButton.icon(
+              //       //           onPressed: () {},
+              //       //           style: ElevatedButton.styleFrom(
+              //       //             backgroundColor: const Color(0xff3b82f6),
+              //       //             shape: RoundedRectangleBorder(
+              //       //               borderRadius: BorderRadius.circular(12),
+              //       //             ),
+              //       //             padding: const EdgeInsets.symmetric(
+              //       //               vertical: 14,
+              //       //             ),
+              //       //           ),
+              //       //           icon: const Icon(
+              //       //             Icons.access_time,
+              //       //             color: Colors.white,
+              //       //           ),
+              //       //           label: const Text(
+              //       //             "Check In",
+              //       //             style: TextStyle(
+              //       //               fontWeight: FontWeight.w600,
+              //       //               color: Colors.white,
+              //       //             ),
+              //       //           ),
+              //       //         ),
+              //       //       ),
+              //       //       const SizedBox(width: 12),
+              //       //       Expanded(
+              //       //         child: OutlinedButton(
+              //       //           onPressed: () {},
+              //       //           style: OutlinedButton.styleFrom(
+              //       //             side: const BorderSide(
+              //       //               color: Color(0xff3b82f6),
+              //       //               width: 2,
+              //       //             ),
+              //       //             shape: RoundedRectangleBorder(
+              //       //               borderRadius: BorderRadius.circular(12),
+              //       //             ),
+              //       //             padding: const EdgeInsets.symmetric(
+              //       //               vertical: 14,
+              //       //             ),
+              //       //           ),
+              //       //           child: const Text(
+              //       //             "Check Out",
+              //       //             style: TextStyle(
+              //       //               fontWeight: FontWeight.w600,
+              //       //               color: Color(0xff3b82f6),
+              //       //             ),
+              //       //           ),
+              //       //         ),
+              //       //       ),
+              //       //     ],
+              //       //   ),
+              //       // ),
+              //     ],
+              //   ),
+              // ),
               SizedBox(height: 30),
               // Container Annoucements
               Container(
