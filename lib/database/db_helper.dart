@@ -12,7 +12,7 @@ class DbHelper {
       join(dbPath, 'ppkd.db'),
       onCreate: (db, version) async {
         await db.execute(
-          "CREATE TABLE $tableStudent(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, class TEXT, age int, password TEXT, no_telp TEXT, alamat TEXT, tanggal_lahir TEXT, nama_ortu TEXT, kontak_ortu TEXT )",
+          "CREATE TABLE $tableStudent(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, class TEXT, age int, password TEXT, no_telp TEXT, alamat TEXT, tanggal_lahir TEXT, nama_ortu TEXT, kontak_ortu TEXT, role TEXT )",
         );
         await db.execute('''
           CREATE TABLE $tableSubjects(

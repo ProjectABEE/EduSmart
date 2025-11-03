@@ -7,8 +7,7 @@ class StudentModel {
   String classs;
   int age;
   dynamic password;
-
-  // 🔹 Kolom baru
+  final String? role;
   String? noTelp;
   String? alamat;
   String? tanggalLahir;
@@ -27,6 +26,7 @@ class StudentModel {
     this.tanggalLahir,
     this.namaOrtu,
     this.kontakOrtu,
+    this.role = 'siswa',
   });
 
   Map<String, dynamic> toMap() {
@@ -42,6 +42,7 @@ class StudentModel {
       'tanggal_lahir': tanggalLahir,
       'nama_ortu': namaOrtu,
       'kontak_ortu': kontakOrtu,
+      'role': role,
     };
   }
 
@@ -58,6 +59,7 @@ class StudentModel {
       tanggalLahir: map['tanggal_lahir'],
       namaOrtu: map['nama_ortu'],
       kontakOrtu: map['kontak_ortu'],
+      role: map['role'],
     );
   }
 

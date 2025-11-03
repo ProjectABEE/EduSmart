@@ -2,6 +2,7 @@ import 'package:edusmart/database/db_helper.dart';
 import 'package:edusmart/preferences/preferences_handler.dart';
 import 'package:edusmart/view/bottomnav.dart';
 import 'package:edusmart/view/daftaredu.dart';
+import 'package:edusmart/view/homepage%20copy.dart';
 import 'package:edusmart/widget/buttonwidget.dart';
 import 'package:edusmart/widget/buttonwidget2.dart';
 import 'package:flutter/material.dart';
@@ -235,22 +236,39 @@ class _LoginEduState extends State<LoginEdu> {
                             PreferenceHandler.saveLogin(true);
                             await PreferenceHandler.setName(user.name);
                             await saveUserSession(emailController.text);
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                // Untuk memindahkan ke halaman tertuju
-                                builder: (context) => BottomNavigationEDU(
-                                  name: user.name,
-                                  // email: emailController.text,
-                                  // nama: 'User',
-                                  // kelas: '-',
-                                  // umur: '-',
+                            if (user.role == 'guru') {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      HomePageGuruEdu(name: user.name),
                                 ),
-                              ),
-                            );
+                              );
+                            } else {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      BottomNavigationEDU(name: user.name),
+                                ),
+                              );
+                            }
+                            // Navigator.pushReplacement(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     // Untuk memindahkan ke halaman tertuju
+                            //     builder: (context) => BottomNavigationEDU(
+                            //       name: user.name,
+                            //       // email: emailController.text,
+                            //       // nama: 'User',
+                            //       // kelas: '-',
+                            //       // umur: '-',
+                            //     ),
+                            //   ),
+                            // );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text("Login Berhasil ${user.name}"),
+                                content: Text("Login Berhasil ${user.role}"),
                               ),
                             );
                           } else {

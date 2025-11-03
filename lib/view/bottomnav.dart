@@ -14,14 +14,13 @@ class BottomNavigationEDU extends StatefulWidget {
 
 class _BottomNavigationEDUState extends State<BottomNavigationEDU> {
   int selectedindex = 0;
-  late List<Widget> widgetOptions; // tidak static, tidak const
+  late List<Widget> widgetOptions;
 
   @override
   void initState() {
     super.initState();
     widgetOptions = [
       HomePageEdu(name: widget.name),
-      // Tambahkan halaman lain di sini
       SchedulePage(),
       GradesPage(),
       ProfilePage(),

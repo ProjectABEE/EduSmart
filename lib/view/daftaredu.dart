@@ -11,6 +11,7 @@ class DaftarEdu extends StatefulWidget {
 }
 
 class _DaftarEduState extends State<DaftarEdu> {
+  String selectedRole = 'siswa';
   bool isbuttonenable = false;
   final TextEditingController namacontroler = TextEditingController();
   final TextEditingController emailcontroler = TextEditingController();
@@ -218,6 +219,22 @@ class _DaftarEduState extends State<DaftarEdu> {
                                 return null;
                               },
                             ),
+                            DropdownButton<String>(
+                              value: selectedRole,
+                              items: ['siswa', 'guru']
+                                  .map(
+                                    (role) => DropdownMenuItem(
+                                      value: role,
+                                      child: Text(role.toUpperCase()),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedRole = value!;
+                                });
+                              },
+                            ),
                             SizedBox(height: 20),
                             Center(
                               child: SizedBox(
@@ -304,6 +321,7 @@ class _DaftarEduState extends State<DaftarEdu> {
                                           classs: kelascontroler.text,
                                           age: int.parse(umurcontroler.text),
                                           password: passwordController.text,
+                                          role: selectedRole,
                                         );
                                     DbHelper.registerUser(dataStudent);
                                   },
