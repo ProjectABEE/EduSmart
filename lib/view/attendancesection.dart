@@ -3,6 +3,7 @@ import 'package:edusmart/model/student_model.dart';
 import 'package:edusmart/view/attendanceshistory.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AttendanceSection extends StatefulWidget {
   final StudentModel? student;
@@ -13,6 +14,7 @@ class AttendanceSection extends StatefulWidget {
 }
 
 class _AttendanceSectionState extends State<AttendanceSection> {
+  StudentModel? student;
   Map<String, Map<String, dynamic>> weekMap = {}; // date -> row
   Map<String, dynamic>? todayRow;
   bool loading = true;
@@ -21,15 +23,45 @@ class _AttendanceSectionState extends State<AttendanceSection> {
   int? todayId;
   double weekPercent = 0.0;
 
-  @override
+  Future<void> getData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+
+    if (email != null) {
+      final db = await DbHelper.db();
+      final result = await db.query(
+        DbHelper.tableStudent,
+        where: 'email = ?',
+        whereArgs: [email],
+      );
+
+      if (result.isNotEmpty) {
+        setState(() {
+          student = StudentModel.fromMap(result.first);
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _refreshAll();
+    _init();
+  }
+
+  Future<void> _init() async {
+    await getData(); // ambil data student dari SharedPreferences
+    await _refreshAll(); // setelah student tidak null, refresh data
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _refreshAll(); // supaya data di-refresh lagi saat kembali ke halaman ini
   }
 
   Future<void> _refreshAll() async {
-    if (widget.student == null) {
+    if (student == null) {
       print('⚠️ student null, skip refresh');
       setState(() => loading = false);
       return;
@@ -53,7 +85,7 @@ class _AttendanceSectionState extends State<AttendanceSection> {
     final startDate = DateFormat('yyyy-MM-dd').format(days.first);
     final endDate = DateFormat('yyyy-MM-dd').format(days.last);
 
-    final results = await DbHelper.getAttendanceByStudent(widget.student!.id!);
+    final results = await DbHelper.getAttendanceByStudent(student!.id!);
     // build map from results (only between startDate..endDate)
     Map<String, Map<String, dynamic>> map = {};
     for (final r in results) {
@@ -86,7 +118,7 @@ class _AttendanceSectionState extends State<AttendanceSection> {
 
   Future<void> _loadToday() async {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final results = await DbHelper.getAttendanceByStudent(widget.student!.id!);
+    final results = await DbHelper.getAttendanceByStudent(student!.id!);
     final found = results.firstWhere(
       (r) => (r['date'] ?? '') == today,
       orElse: () => {},
@@ -278,7 +310,7 @@ class _AttendanceSectionState extends State<AttendanceSection> {
                           context,
                           MaterialPageRoute(
                             builder: (_) =>
-                                HistoryPage(studentId: widget.student!.id!),
+                                HistoryPage(studentId: student!.id!),
                           ),
                         );
                       },
@@ -460,7 +492,7 @@ class _AttendanceSectionState extends State<AttendanceSection> {
                             const Icon(Icons.login, color: Colors.white),
                             const SizedBox(width: 8),
                             Text(
-                              isCheckedIn ? "Sudah Check In" : "Sudah Check In",
+                              isCheckedIn ? "Sudah Check In" : "Check In",
                               style: const TextStyle(color: Colors.white),
                             ),
                           ],

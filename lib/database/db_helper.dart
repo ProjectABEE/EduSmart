@@ -1,5 +1,6 @@
 import 'package:edusmart/model/student_model.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DbHelper {
@@ -232,5 +233,24 @@ class DbHelper {
       where: 'student_id = ?',
       whereArgs: [studentId],
     );
+  }
+
+  // Misalnya di DbHelper.dart
+  static Future<StudentModel?> getStudentFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+    if (email == null) return null;
+
+    final db = await DbHelper.db();
+    final result = await db.query(
+      DbHelper.tableStudent,
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+
+    if (result.isNotEmpty) {
+      return StudentModel.fromMap(result.first);
+    }
+    return null;
   }
 }

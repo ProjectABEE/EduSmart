@@ -7,7 +7,6 @@ import 'package:edusmart/widget/announcementsW.dart';
 import 'package:edusmart/widget/nilai.dart';
 import 'package:edusmart/widget/schedule.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePageEdu extends StatefulWidget {
@@ -21,123 +20,6 @@ class _HomePageEduState extends State<HomePageEdu> {
   StudentModel? student;
   bool isCheckedIn = false;
   bool isCheckedOut = false;
-  int? todayAttendanceId;
-  Map<String, dynamic>? todayAttendance;
-
-  Future<void> _refreshAttendance() async {
-    final results = await DbHelper.getAttendanceByStudent(student!.id!);
-    final today = DateTime.now().toIso8601String().split('T').first;
-
-    final todayRecord = results.firstWhere(
-      (item) => item['date'] == today,
-      orElse: () => {},
-    );
-
-    setState(() {
-      isCheckedIn = todayRecord.isNotEmpty;
-      isCheckedOut = todayRecord['check_out'] != null;
-      todayAttendanceId = todayRecord['id'];
-    });
-  }
-
-  void checkIn() async {
-    if (student == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Data siswa belum siap')));
-      return;
-    }
-
-    final now = DateTime.now();
-    final formattedDate = DateFormat('yyyy-MM-dd').format(now);
-    final formattedTime = DateFormat('HH:mm').format(now);
-
-    final attendance = {
-      'student_id': student!.id,
-      'date': formattedDate,
-      'check_in': formattedTime,
-      'check_out': null,
-      'status': 'Hadir',
-    };
-
-    final insertedId = await DbHelper.insertAttendance(attendance);
-
-    setState(() {
-      isCheckedIn = true;
-      todayAttendanceId = insertedId;
-    });
-
-    // 🔥 ini yang bikin realtime refresh
-    await _loadTodayAttendance();
-
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Check In berhasil!')));
-    }
-  }
-
-  void checkOut() async {
-    if (todayAttendanceId == null) return;
-
-    final now = DateTime.now();
-    final formattedTime = DateFormat('HH:mm').format(now);
-
-    await DbHelper.updateCheckOut(todayAttendanceId!, formattedTime);
-
-    setState(() {
-      isCheckedOut = true;
-    });
-
-    // 🔥 Refresh data agar tampil Check Out langsung
-    await _loadTodayAttendance();
-
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Check Out berhasil!')));
-    }
-  }
-
-  Future<void> _loadTodayAttendance() async {
-    if (student == null) return;
-
-    final db = await DbHelper.db();
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    final results = await db.query(
-      'attendance',
-      where: 'student_id = ? AND date = ?',
-      whereArgs: [student!.id, today],
-    );
-
-    if (results.isNotEmpty) {
-      setState(() {
-        todayAttendance = results.first;
-        isCheckedIn = results.first['check_in'] != null;
-        isCheckedOut = results.first['check_out'] != null;
-        todayAttendanceId = results.first['id'] as int?;
-      });
-    } else {
-      setState(() {
-        todayAttendance = null;
-        isCheckedIn = false;
-        isCheckedOut = false;
-        todayAttendanceId = null;
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeData();
-  }
-
-  Future<void> _initializeData() async {
-    await getData();
-    await _loadTodayAttendance(); // baru load absensi setelah student ke-load
-  }
 
   Future<void> getData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -279,6 +161,7 @@ class _HomePageEduState extends State<HomePageEdu> {
                 ),
               ),
               SizedBox(height: 16),
+
               // Container Attendance
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 15),
@@ -294,8 +177,43 @@ class _HomePageEduState extends State<HomePageEdu> {
                     ),
                   ],
                 ),
-                child: AttendanceSection(student: student),
+                child: FutureBuilder<StudentModel?>(
+                  future: DbHelper.getStudentFromPrefs(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                        height: 220,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const SizedBox(
+                        height: 220,
+                        child: Center(child: Text('Tidak ada data siswa')),
+                      );
+                    }
+                    // ✅ kirim student yang sudah pasti tidak null
+                    return AttendanceSection(student: snapshot.data);
+                  },
+                ),
               ),
+
+              // Container(
+              //   margin: EdgeInsets.symmetric(horizontal: 15),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(30),
+              //     color: Colors.white,
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: Colors.grey.withOpacity(0.5),
+              //         spreadRadius: 1,
+              //         blurRadius: 20,
+              //         offset: const Offset(0, 8),
+              //       ),
+              //     ],
+              //   ),
+              //   child: AttendanceSection(student: student),
+              // ),
 
               // Container(
               //   margin: EdgeInsets.symmetric(horizontal: 15),
