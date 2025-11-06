@@ -180,10 +180,13 @@ class _AttendanceSectionState extends State<AttendanceSection> {
     // update local state
     setState(() {
       isCheckedOut = true;
-      if (todayRow != null) todayRow!['check_out'] = time;
+      if (todayRow != null) {
+        todayRow = Map<String, dynamic>.from(todayRow!);
+        todayRow!['check_out'] = time;
+      }
+
       final dayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
       if (weekMap.containsKey(dayKey)) {
-        // duplikat jadi Map biasa supaya bisa diubah
         final mutableDay = Map<String, dynamic>.from(weekMap[dayKey]!);
         mutableDay['check_out'] = time;
         weekMap[dayKey] = mutableDay;

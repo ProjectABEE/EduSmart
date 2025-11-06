@@ -1,8 +1,6 @@
 import 'package:edusmart/database/db_helper.dart';
 import 'package:edusmart/model/student_model.dart';
-import 'package:edusmart/preferences/preferences_handler.dart';
 import 'package:edusmart/view/AttendanceSection.dart';
-import 'package:edusmart/view/loginedu.dart';
 import 'package:edusmart/widget/announcementsW.dart';
 import 'package:edusmart/widget/nilai.dart';
 import 'package:edusmart/widget/schedule.dart';
@@ -573,6 +571,7 @@ class _HomePageEduState extends State<HomePageEdu> {
                             'Announcements',
                             style: TextStyle(fontSize: 16.9),
                           ),
+                          Spacer(),
                           TextButton(
                             onPressed: () {},
                             child: Text(
@@ -583,19 +582,19 @@ class _HomePageEduState extends State<HomePageEdu> {
                               ),
                             ),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              PreferenceHandler.removeLogin();
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => LoginEdu(),
-                                ),
-                                (route) => false,
-                              );
-                            },
-                            child: Text("Logout"),
-                          ),
+                          // TextButton(
+                          //   onPressed: () {
+                          //     PreferenceHandler.removeLogin();
+                          //     Navigator.pushAndRemoveUntil(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //         builder: (context) => LoginEdu(),
+                          //       ),
+                          //       (route) => false,
+                          //     );
+                          //   },
+                          //   child: Text("Logout"),
+                          // ),
                         ],
                       ),
                     ),
