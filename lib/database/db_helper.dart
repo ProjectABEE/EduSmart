@@ -235,7 +235,7 @@ class DbHelper {
     );
   }
 
-  // Misalnya di DbHelper.dart
+  // Ambil data bersadarkan email
   static Future<StudentModel?> getStudentFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('email');

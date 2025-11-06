@@ -234,7 +234,6 @@ class _LoginEduState extends State<LoginEdu> {
                           );
                           if (user != null) {
                             PreferenceHandler.saveLogin(true);
-                            await PreferenceHandler.setName(user.name);
                             await saveUserSession(emailController.text);
                             if (user.role == 'guru') {
                               Navigator.pushReplacement(

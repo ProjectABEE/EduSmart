@@ -103,46 +103,46 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
 
-    Future<void> onDelete(StudentModel student) async {
-      final res = await showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Hapus Data"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 12,
-              children: [
-                Text(
-                  "Apakah anda yakin ingin menghapus data ${student.name}?",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("Jangan"),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context, true);
-                },
-                child: Text("Ya, hapus aja"),
-              ),
-            ],
-          );
-        },
-      );
+    // Future<void> onDelete(StudentModel student) async {
+    //   final res = await showDialog(
+    //     context: context,
+    //     builder: (context) {
+    //       return AlertDialog(
+    //         title: Text("Hapus Data"),
+    //         content: Column(
+    //           mainAxisSize: MainAxisSize.min,
+    //           spacing: 12,
+    //           children: [
+    //             Text(
+    //               "Apakah anda yakin ingin menghapus data ${student.name}?",
+    //               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    //             ),
+    //           ],
+    //         ),
+    //         actions: [
+    //           TextButton(
+    //             onPressed: () {
+    //               Navigator.pop(context);
+    //             },
+    //             child: Text("Jangan"),
+    //           ),
+    //           TextButton(
+    //             onPressed: () {
+    //               Navigator.pop(context, true);
+    //             },
+    //             child: Text("Ya, hapus aja"),
+    //           ),
+    //         ],
+    //       );
+    //     },
+    //   );
 
-      if (res == true) {
-        DbHelper.deleteStudent(student.id!);
-        getData();
-        ScaffoldMessenger(child: Text("data berhasil di hapus"));
-      }
-    }
+    //   if (res == true) {
+    //     DbHelper.deleteStudent(student.id!);
+    //     getData();
+    //     ScaffoldMessenger(child: Text("data berhasil di hapus"));
+    //   }
+    // }
 
     return Scaffold(
       backgroundColor: const Color(0xfff7f9fc),

@@ -21,12 +21,6 @@ class PreferenceHandler {
     prefs.remove(isLogin);
   }
 
-  //
-  static Future<void> setName(String name) async {
-    final pref = await SharedPreferences.getInstance();
-    await pref.setString('name', name);
-  }
-
   static Future<String?> getName() async {
     final pref = await SharedPreferences.getInstance();
     return pref.getString('name');
