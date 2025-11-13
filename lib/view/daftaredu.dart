@@ -11,6 +11,7 @@ class DaftarEdu extends StatefulWidget {
 }
 
 class _DaftarEduState extends State<DaftarEdu> {
+  bool obscurepass = true;
   String selectedRole = 'siswa';
   bool isbuttonenable = false;
   final TextEditingController namacontroler = TextEditingController();
@@ -42,7 +43,6 @@ class _DaftarEduState extends State<DaftarEdu> {
 
   @override
   Widget build(BuildContext context) {
-    bool obscurepass = true;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Container(
@@ -193,11 +193,6 @@ class _DaftarEduState extends State<DaftarEdu> {
                               autovalidateMode: AutovalidateMode.onUnfocus,
                               obscureText: obscurepass,
                               decoration: InputDecoration(
-                                errorStyle: TextStyle(
-                                  fontSize: 0,
-                                  color: Colors.red,
-                                  height: 0,
-                                ),
                                 border: OutlineInputBorder(),
                                 hintText: 'Masukan Password anda',
                                 suffixIcon: IconButton(
@@ -206,7 +201,11 @@ class _DaftarEduState extends State<DaftarEdu> {
                                       obscurepass = !obscurepass;
                                     });
                                   },
-                                  icon: Icon(Icons.visibility_off),
+                                  icon: Icon(
+                                    obscurepass
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                  ),
                                 ),
                               ),
                               validator: (value) {
@@ -219,22 +218,22 @@ class _DaftarEduState extends State<DaftarEdu> {
                                 return null;
                               },
                             ),
-                            // DropdownButton<String>(
-                            //   value: selectedRole,
-                            //   items: ['siswa', 'guru']
-                            //       .map(
-                            //         (role) => DropdownMenuItem(
-                            //           value: role,
-                            //           child: Text(role.toUpperCase()),
-                            //         ),
-                            //       )
-                            //       .toList(),
-                            //   onChanged: (value) {
-                            //     setState(() {
-                            //       selectedRole = value!;
-                            //     });
-                            //   },
-                            // ),
+                            DropdownButton<String>(
+                              value: selectedRole,
+                              items: ['siswa', 'guru']
+                                  .map(
+                                    (role) => DropdownMenuItem(
+                                      value: role,
+                                      child: Text(role.toUpperCase()),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedRole = value!;
+                                });
+                              },
+                            ),
                             SizedBox(height: 20),
                             Center(
                               child: SizedBox(

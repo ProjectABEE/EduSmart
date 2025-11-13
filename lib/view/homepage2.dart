@@ -24,111 +24,55 @@ class _HomePageGuruEduState extends State<HomePageGuruEdu> {
             children: [
               // Profil Atas Biru
               Container(
-                height: 200,
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 decoration: BoxDecoration(
                   color: Color(0XFF2567E8),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 1,
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(20),
                 ),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    Padding(padding: EdgeInsetsGeometry.all(8)),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        CircleAvatar(
-                          radius: 26,
-                          backgroundImage: AssetImage('assets/images/abe2.png'),
-                        ),
-                        SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Row(
                           children: [
-                            Text(
-                              "Guru,",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
+                            CircleAvatar(
+                              backgroundImage: AssetImage(
+                                'assets/images/abe2.png',
                               ),
+                              radius: 25,
                             ),
-                            Text(
-                              widget.name,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
+                            SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Selamat Datang',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                                Text(
+                                  'Pak Budi Santoso',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        Spacer(),
-                        Icon(Icons.notifications_none_outlined, size: 26),
+                        Icon(Icons.school, color: Colors.white),
                       ],
                     ),
                     SizedBox(height: 10),
-                    Container(
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Color(0X605DB6DF),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "Student ID",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Spacer(),
-                              Text(
-                                "Class",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                "2024-001",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              Spacer(),
-                              Text(
-                                "XI IPA 2",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _statCard('Total Siswa', '156'),
+                        _statCard('Kelas Aktif', '5'),
+                        _statCard('Mata Pelajaran', '3'),
+                      ],
                     ),
                   ],
                 ),
@@ -604,6 +548,33 @@ class _HomePageGuruEduState extends State<HomePageGuruEdu> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statCard(String title, String value) {
+    return Expanded(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Color(0x803b82f6),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              title,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ],
         ),
       ),
     );

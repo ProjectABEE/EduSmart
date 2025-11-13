@@ -1,4 +1,4 @@
-package com.example.edusmart
+package com.ppkd.edusmart
 
 import io.flutter.embedding.android.FlutterActivity
 
